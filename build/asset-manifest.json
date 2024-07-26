@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/static/css/main.b3563962.css",
+    "main.js": "/static/js/main.396a648a.js",
+    "static/js/453.deb55ed8.chunk.js": "/static/js/453.deb55ed8.chunk.js",
+    "static/media/lululogo.png": "/static/media/lululogo.bdc7a8897e7c8818f6b7.png",
+    "static/media/nikelogo.png": "/static/media/nikelogo.6759caacad79311b6f00.png",
+    "index.html": "/index.html",
+    "main.b3563962.css.map": "/static/css/main.b3563962.css.map",
+    "main.396a648a.js.map": "/static/js/main.396a648a.js.map",
+    "453.deb55ed8.chunk.js.map": "/static/js/453.deb55ed8.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.b3563962.css",
+    "static/js/main.396a648a.js"
+  ]
+}

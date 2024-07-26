@@ -15,7 +15,7 @@ function LuluComponent() {
     useEffect(() => { // This useEffect hook runs once when the component mounts
         const fetchInitialMessage = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:8000/api/lulu/initial/'); // Adjust this URL to your GET endpoint
+                const response = await fetch('http://18.188.191.224/api/lulu/initial/'); // Adjust this URL to your GET endpoint
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -33,7 +33,7 @@ function LuluComponent() {
     }, []);
     const fetchClosingMessage = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/lulu/closing/');
+            const response = await fetch('http://18.188.191.224/api/lulu/closing/');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -66,7 +66,7 @@ function LuluComponent() {
         const endTime = Date.now();
         const timeSpent = Math.round((endTime - startTime)/1000);
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/lulu/', {
+            const response = await fetch('http://18.188.191.224/api/lulu/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

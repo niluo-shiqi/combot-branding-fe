@@ -10,20 +10,25 @@ const NikeComponent = () => {
     const [conversation, setConversation] = useState([]);
     const [messageTypeLog, setMessageTypeLog] = useState([]);
     const [classType, setClassType] = useState('');
+    const [apiType, setApiType] = useState('');
     const messagesEndRef = useRef(null);
 
     useEffect(() => { // This useEffect hook runs once when the component mounts
         const fetchInitialMessage = async () => {
             try {
-                const response = await fetch('http://127.0.0.1:8000/api/nike/initial/'); // Adjust this URL to your GET endpoint
+                // Randomly choose between Nike and Baseline API endpoints
+                const isNike = Math.random() < 0.5;
+                const apiUrl = isNike ? 'http://18.188.191.224/api/nike/initial/' : 'http://18.188.191.224/api/chatbot/initial/';
+
+                const response = await fetch(apiUrl); // Fetch from the randomly chosen endpoint
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
                 const data = await response.json();
                 setStartTime(Date.now());
                 setMessages([{ text: data.message, sender: 'combot' }]); // Assuming 'data.message' is your initial message
-                addMessageToConversation(data.message,'combot');
-                addMessageTypeToLog(data.messageType);
+                addMessageToConversation(data.message, 'combot');
+                addMessageTypeToLog(data.messageType + (isNike ? ' Nike Initial' : ' Baseline Initial'));
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
             }
@@ -33,7 +38,7 @@ const NikeComponent = () => {
     }, []);
     const fetchClosingMessage = async () => {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/nike/closing/');
+            const response = await fetch('http://18.188.191.224/api/chatbot/closing/');
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -60,38 +65,78 @@ const NikeComponent = () => {
     };
     const sendMessage = async (e) => {
         e.preventDefault();
+        if (conversationIndex === 6 && !userInput.trim()) {
+            setMessages(messages => [...messages, { text: "Please input a valid prolific id", sender: 'combot' }]);
+            addMessageToConversation("Please input a valid prolific id", 'combot');
+            return;
+        }
         setMessages([...messages, { text: userInput, sender: 'user' }]);
         setInput('');
-        addMessageToConversation(userInput,'user');
+        addMessageToConversation(userInput, 'user');
         const endTime = Date.now();
-        const timeSpent = Math.round((endTime - startTime)/1000);
+        const timeSpent = Math.round((endTime - startTime) / 1000);
+
+        let currentApiType = apiType;
+        let apiUrl = '';
+
+        // Determine the API type and corresponding URL for index 0 or 5
+        if (conversationIndex === 0 || conversationIndex === 5) {
+            currentApiType = Math.random() < 0.5 ? 'Nike' : 'Baseline';
+            setApiType(currentApiType);
+        }
+
+        // Update the API URL based on the current API type
+        if (currentApiType === 'Nike') {
+            apiUrl = 'http://18.188.191.224/api/nike/';
+        } else if (currentApiType === 'Baseline') {
+            apiUrl = 'http://18.188.191.224/api/chatbot/';
+        } else {
+            console.error('Invalid API type:', currentApiType);
+            return;
+        }
+
+        console.log(currentApiType);
+        console.log(userInput);
+        console.log(conversationIndex);
+        console.log(classType);
+        console.log(conversation);
+        console.log(messageTypeLog);
+
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/nike/', {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: userInput, index: conversationIndex, timer: timeSpent,
-                    classType: classType, chatLog: conversation, messageTypeLog: messageTypeLog }),
+                body: JSON.stringify({
+                    message: userInput,
+                    index: conversationIndex,
+                    timer: timeSpent,
+                    classType: classType,
+                    chatLog: conversation,
+                    messageTypeLog: messageTypeLog
+                }),
             });
+
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
+
             const data = await response.json();
-            // Add the response from the chatbot to the messages
-            setConversationIndex(data.index);
-            setClassType(data.classType);
-            if(conversationIndex === 6){
-                setMessages(messages => [...messages, { text: data.reply, sender: 'combot', isHtml: true}]);
+
+            if (conversationIndex === 6) {
+                setMessages(messages => [...messages, { text: data.reply, sender: 'combot', isHtml: true }]);
             } else {
                 setMessages(messages => [...messages, { text: data.reply, sender: 'combot' }]);
             }
 
-            addMessageToConversation(data.reply,'combot');
-            addMessageTypeToLog(data.messageType);
-            if(conversationIndex === 5){
-                const delay = Math.random() * (4000 - 2000) + 3000;
+            addMessageToConversation(data.reply, 'combot');
+            addMessageTypeToLog(data.messageType + " " + currentApiType);
+            setConversationIndex(data.index);
+            setClassType(data.classType);
 
+            if (conversationIndex === 5) {
+                const delay = Math.random() * (4000 - 2000) + 3000;
                 setTimeout(async () => {
                     await fetchClosingMessage();
                 }, delay);

@@ -7,7 +7,7 @@ function App() {
 
     useEffect(() => {
         // Randomly choose 1 or 2
-        const randomNumber = Math.floor(Math.random() * 2) + 1;
+        const randomNumber = 1;
         setSelectedNumber(randomNumber);
     }, []);
 
