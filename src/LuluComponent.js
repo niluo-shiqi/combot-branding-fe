@@ -10,12 +10,16 @@ function LuluComponent() {
     const [conversation, setConversation] = useState([]);
     const [messageTypeLog, setMessageTypeLog] = useState([]);
     const [classType, setClassType] = useState('');
+    const [scenario, setScenario] = useState(null);
     const messagesEndRef = useRef(null);
+    const BASE_URL = 'http://3.149.2.252:8000';
 
     useEffect(() => { // This useEffect hook runs once when the component mounts
         const fetchInitialMessage = async () => {
             try {
-                const response = await fetch('http://18.188.191.224/api/lulu/initial/'); // Adjust this URL to your GET endpoint
+                const response = await fetch(`${BASE_URL}/api/random/initial/`, {
+                    credentials: 'include' // Include cookies with the request
+                });
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -24,6 +28,10 @@ function LuluComponent() {
                 setMessages([{ text: data.message, sender: 'combot' }]); // Assuming 'data.message' is your initial message
                 addMessageToConversation(data.message,'combot');
                 addMessageTypeToLog(data.messageType);
+                // Extract and store scenario from the response
+                if (data.scenario) {
+                    setScenario(data.scenario);
+                }
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
             }
@@ -33,7 +41,9 @@ function LuluComponent() {
     }, []);
     const fetchClosingMessage = async () => {
         try {
-            const response = await fetch('http://18.188.191.224/api/lulu/closing/');
+            const response = await fetch(`${BASE_URL}/api/random/closing/`, {
+                credentials: 'include' // Include cookies with the request
+            });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -66,13 +76,21 @@ function LuluComponent() {
         const endTime = Date.now();
         const timeSpent = Math.round((endTime - startTime)/1000);
         try {
-            const response = await fetch('http://18.188.191.224/api/lulu/', {
+            const response = await fetch(`${BASE_URL}/api/random/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ message: userInput, index: conversationIndex, timer: timeSpent,
-                    classType: classType, chatLog: conversation, messageTypeLog: messageTypeLog }),
+                credentials: 'include', // Include cookies with the request
+                body: JSON.stringify({ 
+                    message: userInput, 
+                    index: conversationIndex, 
+                    timer: timeSpent,
+                    classType: classType, 
+                    chatLog: conversation, 
+                    messageTypeLog: messageTypeLog,
+                    scenario: scenario // Include scenario in the request data
+                }),
             });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -103,7 +121,7 @@ function LuluComponent() {
 
     return (
         <div className="chatbot">
-            <img className="logo" src={logo} />
+            <img className="logo" src={logo} alt="Lulu Logo" />
             <div className="messages">
                 {messages.map((message, index) => (
                     message.text && ( // Only proceed if message.text is not an empty string

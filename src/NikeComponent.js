@@ -11,16 +11,20 @@ const NikeComponent = () => {
     const [messageTypeLog, setMessageTypeLog] = useState([]);
     const [classType, setClassType] = useState('');
     const [apiType, setApiType] = useState('');
+    const [scenario, setScenario] = useState(null);
     const messagesEndRef = useRef(null);
+    const BASE_URL = 'http://3.149.2.252:8000';
 
     useEffect(() => { // This useEffect hook runs once when the component mounts
         const fetchInitialMessage = async () => {
             try {
                 // Randomly choose between Nike and Baseline API endpoints
                 const isNike = Math.random() < 0.5;
-                const apiUrl = isNike ? 'http://18.188.191.224/api/nike/initial/' : 'http://18.188.191.224/api/chatbot/initial/';
+                const apiUrl = isNike ? `${BASE_URL}/api/nike/initial/` : `${BASE_URL}/api/chatbot/initial/`;
 
-                const response = await fetch(apiUrl); // Fetch from the randomly chosen endpoint
+                const response = await fetch(apiUrl, {
+                    credentials: 'include' // Include cookies with the request
+                });
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -29,6 +33,10 @@ const NikeComponent = () => {
                 setMessages([{ text: data.message, sender: 'combot' }]); // Assuming 'data.message' is your initial message
                 addMessageToConversation(data.message, 'combot');
                 addMessageTypeToLog(data.messageType + (isNike ? ' Nike Initial' : ' Baseline Initial'));
+                // Extract and store scenario from the response
+                if (data.scenario) {
+                    setScenario(data.scenario);
+                }
             } catch (error) {
                 console.error('There was a problem with the fetch operation:', error);
             }
@@ -38,7 +46,9 @@ const NikeComponent = () => {
     }, []);
     const fetchClosingMessage = async () => {
         try {
-            const response = await fetch('http://18.188.191.224/api/chatbot/closing/');
+            const response = await fetch(`${BASE_URL}/api/chatbot/closing/`, {
+                credentials: 'include' // Include cookies with the request
+            });
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -87,9 +97,9 @@ const NikeComponent = () => {
 
         // Update the API URL based on the current API type
         if (currentApiType === 'Nike') {
-            apiUrl = 'http://18.188.191.224/api/nike/';
+            apiUrl = `${BASE_URL}/api/nike/`;
         } else if (currentApiType === 'Baseline') {
-            apiUrl = 'http://18.188.191.224/api/chatbot/';
+            apiUrl = `${BASE_URL}/api/chatbot/`;
         } else {
             console.error('Invalid API type:', currentApiType);
             return;
@@ -108,13 +118,15 @@ const NikeComponent = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include', // Include cookies with the request
                 body: JSON.stringify({
                     message: userInput,
                     index: conversationIndex,
                     timer: timeSpent,
                     classType: classType,
                     chatLog: conversation,
-                    messageTypeLog: messageTypeLog
+                    messageTypeLog: messageTypeLog,
+                    scenario: scenario // Include scenario in the request data
                 }),
             });
 
@@ -148,7 +160,7 @@ const NikeComponent = () => {
 
     return (
         <div className="chatbot">
-            <img className="logo" src={logo} />
+            <img className="logo" src={logo} alt="Nike Logo" />
             <div className="messages">
                 {messages.map((message, index) => (
                     message.text && ( // Only proceed if message.text is not an empty string
