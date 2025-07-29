@@ -12,7 +12,7 @@ function LuluComponent() {
     const [classType, setClassType] = useState('');
     const [scenario, setScenario] = useState(null);
     const messagesEndRef = useRef(null);
-    const BASE_URL = 'http://3.149.2.252:8000';
+    const BASE_URL = 'http://18.222.168.169:8000';
 
     useEffect(() => { // This useEffect hook runs once when the component mounts
         const fetchInitialMessage = async () => {
@@ -99,7 +99,8 @@ function LuluComponent() {
             // Add the response from the chatbot to the messages
             setConversationIndex(data.index);
             setClassType(data.classType);
-            if(conversationIndex === 6){
+            // Check if this message should be rendered as HTML (from backend flag or survey link)
+            if(data.isHtml || conversationIndex === 5){
                 setMessages(messages => [...messages, { text: data.reply, sender: 'combot', isHtml: true}]);
             } else {
                 setMessages(messages => [...messages, { text: data.reply, sender: 'combot' }]);
@@ -107,7 +108,9 @@ function LuluComponent() {
 
             addMessageToConversation(data.reply,'combot');
             addMessageTypeToLog(data.messageType);
-            if(conversationIndex === 5){
+            
+            // Check if the backend wants us to call the closing message API
+            if(data.callClosingMessage){
                 const delay = Math.random() * (4000 - 2000) + 3000;
 
                 setTimeout(async () => {
